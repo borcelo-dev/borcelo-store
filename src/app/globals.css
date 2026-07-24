@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: #F7F6FB;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #EFEBFA;
+  --color-border: #DDD6EF;
+  --color-ink: #221934;
+  --color-ink-muted: #55506A;
+  --color-purple: #5B34A6;
+  --color-purple-pressed: #47277F;
+  --color-purple-tint: #EDE6FB;
+  --color-success: #1E7A46;
+  --color-danger: #B3261E;
+
+  --font-heading: var(--font-manrope);
+  --font-body: var(--font-source-sans-3);
+  --font-mono: var(--font-ibm-plex-mono);
+
+  --radius-default: 2px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    font-size: 17px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.5;
+    min-height: 100dvh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  h1 { font-size: 1.882rem; }
+  h2 { font-size: 1.647rem; }
+  h3 { font-size: 1.412rem; }
+  h4 { font-size: 1.176rem; }
+
+  :focus-visible {
+    outline: 2px solid var(--color-purple);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility tabular-nums {
+  font-family: var(--font-ibm-plex-mono);
+  font-variant-numeric: tabular-nums;
 }
