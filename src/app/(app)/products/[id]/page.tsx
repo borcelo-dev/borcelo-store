@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getProduct, addStock } from "@/lib/data-access/products";
+import Image from "next/image";
+import { getProduct, addStock, updateProduct } from "@/lib/data-access/products";
 import { onStockLogsChange } from "@/lib/data-access/stockLogs";
+import { onCategoriesChange } from "@/lib/data-access/categories";
 import { useAuth } from "@/contexts/auth-context";
 import Card from "@/components/ui/card";
 import Badge from "@/components/ui/badge";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
-import { ArrowLeft, Package, Plus, History } from "lucide-react";
+import Modal from "@/components/ui/modal";
+import ProductForm, { type ProductFormSubmitData } from "@/components/product-form";
+import { ArrowLeft, Package, Plus, History, Pencil } from "lucide-react";
 import type { Product } from "@/lib/schemas/product";
 import type { StockLog } from "@/lib/schemas/stockLog";
 
@@ -19,11 +23,13 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const [product, setProduct] = useState<(Product & { id: string }) | null>(null);
   const [logs, setLogs] = useState<(StockLog & { id: string })[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [addDelta, setAddDelta] = useState("");
   const [addNote, setAddNote] = useState("");
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
     getProduct(id).then((p) => {
@@ -31,8 +37,23 @@ export default function ProductDetailPage() {
       setLoading(false);
     });
     const unsub = onStockLogsChange(id, setLogs);
-    return unsub;
+    const unsubCat = onCategoriesChange(setCategories);
+    return () => { unsub(); unsubCat(); };
   }, [id]);
+
+  const handleEdit = async (data: ProductFormSubmitData) => {
+    await updateProduct(id, {
+      name: data.name,
+      barcode: data.barcode,
+      categoryName: data.categoryName,
+      unitPrice: data.unitPrice,
+      bufferQuantity: data.bufferQuantity,
+      imageUrl: data.imageUrl,
+    });
+    const updated = await getProduct(id);
+    setProduct(updated);
+    setShowEdit(false);
+  };
 
   const handleAddStock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,19 +97,27 @@ export default function ProductDetailPage() {
 
   return (
     <div className="py-6 space-y-6">
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-1 text-ink-muted hover:text-ink transition-colors"
-      >
-        <ArrowLeft size={20} />
-        <span className="text-sm font-semibold">Back to Products</span>
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1 text-ink-muted hover:text-ink transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span className="text-sm font-semibold">Back to Products</span>
+        </button>
+        <Button variant="secondary" onClick={() => setShowEdit(true)}>
+          <Pencil size={18} className="mr-1" />
+          Edit
+        </Button>
+      </div>
 
       <div className="flex items-start gap-4">
         {product.imageUrl ? (
-          <img
+          <Image
             src={product.imageUrl}
             alt={product.name}
+            width={80}
+            height={80}
             className="w-20 h-20 rounded-2px object-cover"
           />
         ) : (
@@ -185,6 +214,26 @@ export default function ProductDetailPage() {
           </div>
         )}
       </section>
+
+      <Modal open={showEdit} onClose={() => setShowEdit(false)} title="Edit Product">
+        <ProductForm
+          mode="edit"
+          categories={categories}
+          initialValues={{
+            name: product.name,
+            barcode: product.barcode || "",
+            categoryName: product.categoryName,
+            unitPrice: String(product.unitPrice),
+            quantity: String(product.quantity),
+            bufferQuantity: String(product.bufferQuantity),
+            imageUrl: product.imageUrl ?? null,
+          }}
+          submitLabel="Save Changes"
+          submittingLabel="Saving..."
+          onSubmit={handleEdit}
+          onCancel={() => setShowEdit(false)}
+        />
+      </Modal>
     </div>
   );
 }

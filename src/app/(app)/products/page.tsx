@@ -2,41 +2,43 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { onProductsChange, createProduct, uploadProductImage } from "@/lib/data-access/products";
-import { onCategoriesChange, createCategory } from "@/lib/data-access/categories";
+import Image from "next/image";
+import { onProductsChange, createProduct } from "@/lib/data-access/products";
+import { onCategoriesChange } from "@/lib/data-access/categories";
 import Card from "@/components/ui/card";
 import Badge from "@/components/ui/badge";
 import Button from "@/components/ui/button";
-import Input from "@/components/ui/input";
 import Modal from "@/components/ui/modal";
+import ProductForm, { type ProductFormValues } from "@/components/product-form";
 import { Plus, Search } from "lucide-react";
 import type { Product } from "@/lib/schemas/product";
 
+const emptyForm: ProductFormValues = {
+  name: "",
+  barcode: "",
+  categoryName: "",
+  unitPrice: "",
+  quantity: "0",
+  bufferQuantity: "5",
+  imageUrl: null,
+};
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<(Product & { id: string })[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    const unsub = onProductsChange(setProducts);
+    const unsub = onProductsChange((p) => {
+      setProducts(p);
+      setProductsLoading(false);
+    });
     const unsubCat = onCategoriesChange(setCategories);
     return () => { unsub(); unsubCat(); };
   }, []);
-
-  const [form, setForm] = useState({
-    name: "",
-    barcode: "",
-    categoryName: "",
-    unitPrice: "",
-    quantity: "0",
-    bufferQuantity: "5",
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [newCategoryName, setNewCategoryName] = useState("");
 
   const filtered = products.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,58 +47,17 @@ export default function ProductsPage() {
     return matchSearch && matchCategory;
   });
 
-  const resetForm = () => {
-    setForm({ name: "", barcode: "", categoryName: "", unitPrice: "", quantity: "0", bufferQuantity: "5" });
-    setImageFile(null);
-    setFormError("");
-  };
-
-  const handleAddCategory = async () => {
-    const name = newCategoryName.trim();
-    if (!name) return;
-    try {
-      await createCategory(name);
-      setForm((f) => ({ ...f, categoryName: name }));
-      setNewCategoryName("");
-    } catch {
-      setFormError("Failed to create category.");
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-
-    if (!form.name.trim() || !form.categoryName || !form.unitPrice) {
-      setFormError("Name, category, and price are required.");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      let imageUrl: string | null = null;
-      if (imageFile) {
-        imageUrl = await uploadProductImage(imageFile);
-      }
-
-      await createProduct({
-        name: form.name.trim(),
-        barcode: form.barcode.trim() || null,
-        categoryName: form.categoryName,
-        unitPrice: parseFloat(form.unitPrice),
-        quantity: parseInt(form.quantity) || 0,
-        bufferQuantity: parseInt(form.bufferQuantity) || 5,
-        imageUrl,
-      });
-
-      resetForm();
-      setShowForm(false);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to create product.";
-      setFormError(message);
-    } finally {
-      setSubmitting(false);
-    }
+  const handleCreate = async (data: {
+    name: string;
+    barcode: string | null;
+    categoryName: string;
+    unitPrice: number;
+    quantity: number;
+    bufferQuantity: number;
+    imageUrl: string | null;
+  }) => {
+    await createProduct(data);
+    setShowForm(false);
   };
 
   return (
@@ -132,7 +93,11 @@ export default function ProductsPage() {
         </select>
       </div>
 
-      {filtered.length === 0 ? (
+      {productsLoading ? (
+        <Card>
+          <p className="text-ink-muted text-center py-8">Loading products...</p>
+        </Card>
+      ) : filtered.length === 0 ? (
         <Card>
           <p className="text-ink-muted text-center py-8">
             {search ? "No products match your search." : "No products yet. Add your first product."}
@@ -145,9 +110,11 @@ export default function ProductsPage() {
               <Card className="flex items-center justify-between hover:bg-surface-muted transition-colors">
                 <div className="flex items-center gap-3">
                   {p.imageUrl ? (
-                    <img
+                    <Image
                       src={p.imageUrl}
                       alt={p.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-2px object-cover"
                     />
                   ) : (
@@ -178,107 +145,15 @@ export default function ProductsPage() {
       )}
 
       <Modal open={showForm} onClose={() => setShowForm(false)} title="New Product">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            id="name"
-            label="Product Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            required
-          />
-
-          <Input
-            id="barcode"
-            label="Barcode (optional)"
-            value={form.barcode}
-            onChange={(e) => setForm({ ...form, barcode: e.target.value })}
-          />
-
-          <div>
-            <label htmlFor="category" className="text-sm font-semibold text-ink">Category</label>
-            <div className="flex gap-2 mt-1.5">
-              <select
-                id="category"
-                value={form.categoryName}
-                onChange={(e) => setForm({ ...form, categoryName: e.target.value })}
-                className="flex-1 h-12 px-3 rounded-2px border border-border bg-surface text-ink text-[17px]"
-                required
-              >
-                <option value="">Select category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.name}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex gap-2 mt-2">
-              <input
-                type="text"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="+ new category"
-                className="flex-1 h-10 px-3 rounded-2px border border-border bg-surface text-ink text-sm placeholder:text-ink-muted"
-              />
-              <button
-                type="button"
-                onClick={handleAddCategory}
-                className="h-10 px-3 rounded-2px bg-purple-tint text-purple text-sm font-semibold hover:bg-border transition-colors"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          <Input
-            id="unitPrice"
-            label="Unit Price (₱)"
-            type="number"
-            step="0.01"
-            min="0"
-            value={form.unitPrice}
-            onChange={(e) => setForm({ ...form, unitPrice: e.target.value })}
-            required
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              id="quantity"
-              label="Initial Stock"
-              type="number"
-              min="0"
-              value={form.quantity}
-              onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-            />
-            <Input
-              id="bufferQuantity"
-              label="Buffer Quantity"
-              type="number"
-              min="1"
-              value={form.bufferQuantity}
-              onChange={(e) => setForm({ ...form, bufferQuantity: e.target.value })}
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-ink">Product Image (optional)</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              className="block mt-1.5 w-full text-sm text-ink-muted file:mr-4 file:py-2 file:px-4 file:rounded-2px file:border file:border-border file:bg-surface file:text-ink file:text-sm file:font-semibold hover:file:bg-surface-muted"
-            />
-          </div>
-
-          {formError && <p className="text-danger text-sm">{formError}</p>}
-
-          <div className="flex gap-2 justify-end">
-            <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? "Creating..." : "Create Product"}
-            </Button>
-          </div>
-        </form>
+        <ProductForm
+          mode="create"
+          categories={categories}
+          initialValues={emptyForm}
+          submitLabel="Create Product"
+          submittingLabel="Creating..."
+          onSubmit={handleCreate}
+          onCancel={() => setShowForm(false)}
+        />
       </Modal>
     </div>
   );

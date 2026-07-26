@@ -228,7 +228,7 @@ export default function PosPage() {
             {cart.map((item) => (
               <div
                 key={item.productId}
-                className="flex items-center justify-between py-2 border-b border-border last:border-b-0"
+                className="flex items-center justify-between gap-2 py-2 border-b border-border last:border-b-0"
               >
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold truncate">{item.name}</p>
@@ -236,10 +236,11 @@ export default function PosPage() {
                     &#x20B1;{item.unitPrice.toFixed(2)} x {item.qty}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={() => updateQty(item.productId, -1)}
-                    className="w-8 h-8 rounded-2px border border-border flex items-center justify-center text-ink hover:bg-surface-muted"
+                    aria-label={`Decrease quantity of ${item.name}`}
+                    className="w-12 h-12 rounded-2px border border-border flex items-center justify-center text-ink hover:bg-surface-muted shrink-0"
                   >
                     -
                   </button>
@@ -248,18 +249,20 @@ export default function PosPage() {
                   </span>
                   <button
                     onClick={() => updateQty(item.productId, 1)}
-                    className="w-8 h-8 rounded-2px border border-border flex items-center justify-center text-ink hover:bg-surface-muted"
+                    aria-label={`Increase quantity of ${item.name}`}
+                    className="w-12 h-12 rounded-2px border border-border flex items-center justify-center text-ink hover:bg-surface-muted shrink-0"
                   >
                     +
                   </button>
                   <button
                     onClick={() => removeItem(item.productId)}
-                    className="w-8 h-8 rounded-2px flex items-center justify-center text-danger hover:bg-surface-muted"
+                    aria-label={`Remove ${item.name} from cart`}
+                    className="w-12 h-12 rounded-2px flex items-center justify-center text-danger hover:bg-surface-muted shrink-0"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
-                <p className="tabular-nums font-semibold ml-3 w-20 text-right">
+                <p className="tabular-nums font-semibold w-20 text-right shrink-0">
                   &#x20B1;{item.lineTotal.toFixed(2)}
                 </p>
               </div>

@@ -27,11 +27,15 @@ export default function DashboardPage() {
   const lowStockProducts = products.filter((p) => p.quantity <= p.bufferQuantity);
   const totalProducts = products.length;
 
-  const productSales = new Map<string, { totalQty: number; count: number }>();
+  const now = new Date().getTime();
+
+  const productSales = new Map<string, { totalQty: number; firstSaleMs: number }>();
   for (const log of saleLogs) {
-    const existing = productSales.get(log.productId) || { totalQty: 0, count: 0 };
+    const seconds = (log.createdAt as { seconds: number } | undefined)?.seconds;
+    const ms = seconds ? seconds * 1000 : now;
+    const existing = productSales.get(log.productId) || { totalQty: 0, firstSaleMs: ms };
     existing.totalQty += Math.abs(log.delta);
-    existing.count += 1;
+    existing.firstSaleMs = Math.min(existing.firstSaleMs, ms);
     productSales.set(log.productId, existing);
   }
 
@@ -40,7 +44,8 @@ export default function DashboardPage() {
     .map((p) => {
       const stats = productSales.get(p.id);
       if (!stats) return null;
-      const avgDailySales = stats.totalQty / Math.max(stats.count, 1);
+      const daysSinceFirstSale = Math.max((now - stats.firstSaleMs) / 86_400_000, 1);
+      const avgDailySales = stats.totalQty / daysSinceFirstSale;
       const daysLeft = p.quantity / Math.max(avgDailySales, 0.1);
       return { product: p, daysLeft, avgDailySales };
     })
