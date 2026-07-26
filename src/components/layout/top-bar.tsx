@@ -33,9 +33,11 @@ export default function TopBar() {
   return (
     <header className="sticky top-0 left-0 right-0 z-20 bg-surface border-b border-border px-4">
       <div className="flex items-center justify-between h-14 max-w-4xl mx-auto">
-        <span className="font-heading font-bold text-lg text-ink tracking-tight">
-          Borcello Store
-        </span>
+        <img
+          src="/lockup-on-light.png"
+          alt="Borcello Store"
+          className="h-8 w-auto"
+        />
 
         <div className="relative" ref={dropdownRef}>
           <button

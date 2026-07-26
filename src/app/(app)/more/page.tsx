@@ -1,8 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/card";
-import { Layers, ChartBar } from "lucide-react";
+import { Layers, ChartBar, AlertTriangle } from "lucide-react";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import type { CartItem } from "@/lib/schemas/sale";
+
+type ConflictSale = {
+  id: string;
+  cart: CartItem[];
+  cashierName: string;
+  conflictReason: string;
+  createdAt: { toDate(): Date };
+};
 
 const links = [
   {
@@ -20,9 +38,64 @@ const links = [
 ];
 
 export default function MorePage() {
+  const [conflicts, setConflicts] = useState<ConflictSale[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const q = query(
+        collection(db, "pendingSales"),
+        where("status", "==", "conflict"),
+        orderBy("createdAt", "desc"),
+      );
+      const snap = await getDocs(q);
+      setConflicts(
+        snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            cart: data.cart,
+            cashierName: data.cashierName,
+            conflictReason: data.conflictReason,
+            createdAt: data.createdAt,
+          };
+        }),
+      );
+    }
+    load();
+  }, []);
+
   return (
     <div className="py-6 space-y-4">
       <h1 className="font-heading font-bold text-2xl">More</h1>
+
+      {conflicts.length > 0 && (
+        <Card className="border-danger/30">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={20} className="text-danger" />
+            <h2 className="font-heading font-bold text-lg text-danger">
+              <span className="tabular-nums">{conflicts.length}</span> sale{conflicts.length !== 1 ? "s" : ""} need review
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {conflicts.map((c) => (
+              <div key={c.id} className="border border-border rounded-2px p-3 bg-surface-muted/50">
+                <p className="text-sm text-ink-muted mb-1">
+                  {c.cashierName} · {c.createdAt.toDate().toLocaleString()}
+                </p>
+                <p className="font-semibold text-danger text-sm mb-2">{c.conflictReason}</p>
+                <div className="text-sm text-ink-muted">
+                  {c.cart.map((item) => (
+                    <span key={item.productId} className="tabular-nums mr-3">
+                      {item.name} x{item.qty} @ P{item.unitPrice.toFixed(2)}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-ink-muted mt-1 font-mono">Sale ID: {c.id}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <div className="space-y-2">
         {links.map((link) => {

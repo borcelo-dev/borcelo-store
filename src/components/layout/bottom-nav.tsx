@@ -2,21 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, History } from "lucide-react";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/products", label: "Products", icon: Package },
-  { href: "/pos", label: "Sell", icon: ShoppingCart },
-  { href: "/sales", label: "History", icon: History },
-];
+import { navItems } from "./nav-items";
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-border flex justify-around items-end"
+      className="fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-border flex justify-around items-end md:hidden"
       style={{
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
         boxShadow: "0 2px 8px rgba(34,25,52,0.12)",

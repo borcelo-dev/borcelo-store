@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { SyncProvider } from "@/contexts/sync-context";
 import AppShell from "@/components/layout/app-shell";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -25,5 +26,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!user) return null;
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <SyncProvider>
+      <AppShell>{children}</AppShell>
+    </SyncProvider>
+  );
 }

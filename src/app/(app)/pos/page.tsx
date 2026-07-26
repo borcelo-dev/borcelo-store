@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { onProductsChange, getProductsByBarcode } from "@/lib/data-access/products";
-import { recordSale } from "@/lib/data-access/sales";
+import { stageSale } from "@/lib/data-access/pendingSales";
 import { useAuth } from "@/contexts/auth-context";
 import Card from "@/components/ui/card";
 import Button from "@/components/ui/button";
@@ -14,7 +13,6 @@ import type { CartItem } from "@/lib/schemas/sale";
 
 export default function PosPage() {
   const { user, userDoc } = useAuth();
-  const router = useRouter();
   const [products, setProducts] = useState<(Product & { id: string })[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState("");
@@ -136,13 +134,10 @@ export default function PosPage() {
     setCheckingOut(true);
     setCheckoutError("");
     try {
-      const saleId = await recordSale(cart, user.uid, userDoc.displayName);
+      await stageSale(cart, user.uid, userDoc.displayName);
+      setCart([]);
       setCheckoutSuccess(true);
-      setTimeout(() => {
-        setCart([]);
-        setCheckoutSuccess(false);
-        if (saleId) router.push(`/sales/${saleId}`);
-      }, 1500);
+      setTimeout(() => setCheckoutSuccess(false), 2500);
     } catch (err: unknown) {
       setCheckoutError(
         err instanceof Error ? err.message : "Checkout failed. Please try again."
@@ -294,7 +289,7 @@ export default function PosPage() {
         {checkoutSuccess ? (
           <>
             <Check size={20} className="mr-1" />
-            Sale Completed!
+            Sale Staged
           </>
         ) : checkingOut ? (
           "Processing..."

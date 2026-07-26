@@ -12,9 +12,11 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "@/lib/firebase/config";
+import { db } from "@/lib/firebase/config";
+import { uploadProductImage } from "@/lib/cloudinary/upload";
 import { ProductSchema, type Product } from "@/lib/schemas/product";
+
+export { uploadProductImage };
 
 export async function getProducts() {
   const q = query(collection(db, "products"), orderBy("name"));
@@ -79,12 +81,6 @@ export async function addStock(
       createdAt: serverTimestamp(),
     });
   });
-}
-
-export async function uploadProductImage(file: File): Promise<string> {
-  const fileRef = ref(storage, `products/${Date.now()}_${file.name}`);
-  await uploadBytes(fileRef, file);
-  return getDownloadURL(fileRef);
 }
 
 export async function getProductsByBarcode(barcode: string) {

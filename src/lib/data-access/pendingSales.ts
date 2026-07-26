@@ -1,0 +1,96 @@
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import { commitSale } from "@/lib/data-access/sales";
+import type { CartItem } from "@/lib/schemas/sale";
+
+export async function stageSale(
+  cart: CartItem[],
+  cashierId: string,
+  cashierName: string,
+): Promise<string> {
+  const saleId = crypto.randomUUID();
+  await setDoc(doc(db, "pendingSales", saleId), {
+    cart,
+    cashierId,
+    cashierName,
+    status: "pending",
+    conflictReason: null,
+    createdAt: serverTimestamp(),
+  });
+  return saleId;
+}
+
+export async function processPendingSales(
+  onStatus?: (state: { syncing: boolean; pendingCount: number; conflictCount: number }) => void,
+): Promise<void> {
+  const q = query(
+    collection(db, "pendingSales"),
+    where("status", "==", "pending"),
+    orderBy("createdAt"),
+  );
+
+  const snap = await getDocs(q);
+  if (snap.empty) {
+    onStatus?.({ syncing: false, pendingCount: 0, conflictCount: await getConflictCount() });
+    return;
+  }
+
+  let remaining = snap.docs.length;
+  onStatus?.({ syncing: true, pendingCount: remaining, conflictCount: await getConflictCount() });
+
+  for (const docSnap of snap.docs) {
+    const data = docSnap.data();
+    try {
+      await commitSale(docSnap.id, data.cart, data.cashierId, data.cashierName);
+      remaining--;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Stock validation failed";
+      try {
+        await setDoc(
+          doc(db, "pendingSales", docSnap.id),
+          { status: "conflict", conflictReason: message },
+          { merge: true },
+        );
+      } catch {
+        // best-effort conflict recording
+      }
+      remaining--;
+    }
+    onStatus?.({ syncing: remaining > 0, pendingCount: remaining, conflictCount: await getConflictCount() });
+  }
+}
+
+export async function getConflictCount(): Promise<number> {
+  const q = query(
+    collection(db, "pendingSales"),
+    where("status", "==", "conflict"),
+  );
+  const snap = await getDocs(q);
+  return snap.size;
+}
+
+export function onPendingSalesChange(
+  callback: (pendingCount: number, conflictCount: number) => void,
+) {
+  const q = query(collection(db, "pendingSales"), orderBy("createdAt", "desc"));
+  return onSnapshot(q, (snap) => {
+    let pending = 0;
+    let conflicts = 0;
+    snap.docs.forEach((d) => {
+      const s = d.data().status as string;
+      if (s === "pending") pending++;
+      if (s === "conflict") conflicts++;
+    });
+    callback(pending, conflicts);
+  });
+}

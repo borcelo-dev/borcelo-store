@@ -13,14 +13,21 @@ import {
 import { db } from "@/lib/firebase/config";
 import type { CartItem, Sale } from "@/lib/schemas/sale";
 
-export async function recordSale(
+export async function commitSale(
+  saleId: string,
   cart: CartItem[],
   cashierId: string,
-  cashierName: string
-): Promise<string> {
-  const saleRef = doc(collection(db, "sales"));
+  cashierName: string,
+): Promise<void> {
+  const pendingRef = doc(db, "pendingSales", saleId);
+  const saleRef = doc(db, "sales", saleId);
 
   await runTransaction(db, async (tx) => {
+    const pendingSnap = await tx.get(pendingRef);
+    if (!pendingSnap.exists() || pendingSnap.data().status !== "pending") {
+      throw new Error("Sale already processed or no longer pending.");
+    }
+
     for (const item of cart) {
       const productRef = doc(db, "products", item.productId);
       const productSnap = await tx.get(productRef);
@@ -30,7 +37,7 @@ export async function recordSale(
       const currentQty = productSnap.data().quantity as number;
       if (currentQty < item.qty) {
         throw new Error(
-          `Insufficient stock for "${item.name}". Available: ${currentQty}, requested: ${item.qty}.`
+          `Insufficient stock for "${item.name}". Available: ${currentQty}, requested: ${item.qty}.`,
         );
       }
     }
@@ -68,9 +75,9 @@ export async function recordSale(
       cashierName,
       createdAt: serverTimestamp(),
     });
-  });
 
-  return saleRef.id;
+    tx.update(pendingRef, { status: "committed" });
+  });
 }
 
 export async function getSales() {
