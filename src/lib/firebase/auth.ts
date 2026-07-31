@@ -27,9 +27,16 @@ export async function getUserDoc(uid: string) {
 
 export async function createUserDoc(
   uid: string,
-  data: { displayName: string; role: "owner" | "cashier" }
+  data: { displayName: string; role: "owner" | "cashier"; photoURL?: string }
 ) {
   return setDoc(doc(db, "users", uid), data);
+}
+
+export async function updateUserDoc(
+  uid: string,
+  data: Partial<{ displayName: string; role: "owner" | "cashier"; photoURL: string }>
+) {
+  return setDoc(doc(db, "users", uid), data, { merge: true });
 }
 
 export { auth };

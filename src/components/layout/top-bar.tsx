@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User, Settings, Ellipsis, LogOut, ChevronDown } from "lucide-react";
+import Image from "next/image";
 import { useAuth } from "@/contexts/auth-context";
 
 export default function TopBar() {
@@ -33,9 +34,11 @@ export default function TopBar() {
   return (
     <header className="sticky top-0 left-0 right-0 z-20 bg-surface border-b border-border px-4">
       <div className="flex items-center justify-between h-14 max-w-4xl mx-auto">
-        <img
+        <Image
           src="/lockup-on-light.png"
           alt="Borcello Store"
+          width={120}
+          height={32}
           className="h-8 w-auto"
         />
 
@@ -44,8 +47,18 @@ export default function TopBar() {
             onClick={() => setOpen(!open)}
             className="flex items-center gap-2 h-10 px-2 rounded-2px hover:bg-surface-muted transition-colors"
           >
-            <div className="w-9 h-9 rounded-full bg-purple text-white flex items-center justify-center font-semibold text-sm">
-              {initials}
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-purple text-white flex items-center justify-center font-semibold text-sm">
+              {userDoc?.photoURL ? (
+                <Image
+                  src={userDoc.photoURL}
+                  alt="Profile"
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                initials
+              )}
             </div>
             <ChevronDown size={16} className={`text-ink-muted transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
