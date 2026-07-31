@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Borcello Store — Documentation & Progress Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECE2C4;
+    --paper-light:#F7F0DC;
+    --paper-dark:#DED0A6;
+    --ink:#2B2418;
+    --ink-soft:#5B5138;
+    --ballpen:#1F3A5C;
+    --stamp:#B23A2E;
+    --stamp-dark:#8C2C22;
+    --peso:#2E6B4F;
+    --tag:#E0A82E;
+    --rule:#C9BB93;
+    --card-shadow: 0 2px 0 rgba(43,36,24,0.06), 0 8px 20px -12px rgba(43,36,24,0.35);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.35), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.6;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(43,36,24,0.015) 0px, rgba(43,36,24,0.015) 1px, transparent 1px, transparent 3px);
+    opacity:0.6;
+  }
+  a{color:var(--ballpen);}
+  .layout{
+    display:flex;
+    max-width:1240px;
+    margin:0 auto;
+    position:relative;
+    z-index:1;
+  }
+  nav.toc{
+    width:250px;
+    flex-shrink:0;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    padding:28px 14px 28px 0;
+  }
+  nav.toc .toc-inner{
+    background:var(--paper-light);
+    border:1px solid var(--rule);
+    border-radius:2px;
+    box-shadow:var(--card-shadow);
+  }
+  nav.toc .toc-head{
+    font-family:'Alfa Slab One', sans-serif;
+    font-size:0.75rem;
+    letter-spacing:0.06em;
+    color:var(--stamp);
+    padding:14px 16px 8px;
+    text-transform:uppercase;
+  }
+  nav.toc ol{
+    list-style:none;
+    margin:0; padding:0 0 12px;
+    counter-reset:tab;
+  }
+  nav.toc li{counter-increment:tab;}
+  nav.toc a{
+    display:flex;
+    gap:8px;
+    align-items:baseline;
+    text-decoration:none;
+    color:var(--ink-soft);
+    font-size:0.82rem;
+    padding:7px 16px;
+    border-left:3px solid transparent;
+  }
+  nav.toc a::before{
+    content: counter(tab, decimal-leading-zero);
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--rule);
+    font-size:0.75rem;
+  }
+  nav.toc a:hover{ background:rgba(178,58,46,0.06); border-left-color:var(--stamp); color:var(--ink);}
+  #toc-toggle{display:none;}
+
+  main{
+    flex:1;
+    min-width:0;
+    padding:28px 32px 100px 32px;
+  }
+
+  .resibo{
+    background:var(--paper-light);
+    border:1px solid var(--rule);
+    box-shadow:var(--card-shadow);
+    border-radius:2px;
+    padding:26px 30px 22px;
+    position:relative;
+    margin-bottom:10px;
+  }
+  .resibo .kicker{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--stamp);
+  }
+  .resibo h1{
+    font-family:'Alfa Slab One', sans-serif;
+    font-weight:400;
+    font-size:2.3rem;
+    line-height:1.15;
+    margin:6px 0 4px;
+    color:var(--ink);
+  }
+  .resibo .sub{
+    color:var(--ink-soft);
+    font-size:0.98rem;
+    max-width:64ch;
+    margin-bottom:18px;
+  }
+  .receipt-tape{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.86rem;
+    background:repeating-linear-gradient(90deg, transparent 0, transparent 6px, rgba(43,36,24,0.05) 6px, rgba(43,36,24,0.05) 7px);
+    border-top:1px dashed var(--rule);
+    border-bottom:1px dashed var(--rule);
+    padding:14px 4px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px 24px;
+  }
+  .receipt-tape .row{display:flex; justify-content:space-between; gap:12px;}
+  .receipt-tape .row span:first-child{color:var(--ink-soft);}
+  .receipt-tape .row span:last-child{font-weight:600; text-align:right;}
+  .snip{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    letter-spacing:0.08em;
+    margin-top:10px;
+  }
+
+  /* ---------- progress tracker bar ---------- */
+  .tracker-bar{
+    background:var(--paper-light);
+    border:1px solid var(--rule);
+    box-shadow:var(--card-shadow);
+    border-radius:2px;
+    padding:16px 20px;
+    margin:18px 0 6px;
+  }
+  .tracker-head{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .tracker-head button{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    background:none;
+    border:1px solid var(--rule);
+    color:var(--stamp-dark);
+    padding:4px 10px;
+    border-radius:2px;
+    cursor:pointer;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+  .tracker-head button:hover{ background:#F6E3DE; }
+  .tracker-track{
+    height:10px;
+    background:var(--paper-dark);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .tracker-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--peso), #4C9A72);
+    transition:width .35s ease;
+  }
+  .tracker-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    margin-top:8px;
+  }
+
+  .torn{
+    height:16px;
+    margin:34px 0 26px;
+    background:
+      linear-gradient(135deg, transparent 75%, var(--paper) 75%) 0 0/10px 10px,
+      linear-gradient(45deg, transparent 75%, var(--paper) 75%) 0 0/10px 10px;
+    background-color:var(--paper-dark);
+    opacity:0.9;
+  }
+
+  section{margin-bottom:8px;}
+  section h2{
+    font-family:'Alfa Slab One', sans-serif;
+    font-weight:400;
+    font-size:1.5rem;
+    color:var(--ink);
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    margin:0 0 6px;
+  }
+  section h2 .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.95rem;
+    color:var(--stamp);
+    background:var(--paper-light);
+    border:1px solid var(--rule);
+    padding:2px 9px;
+    border-radius:2px;
+  }
+  section .lede{color:var(--ink-soft); max-width:78ch; margin-bottom:16px;}
+  h3{font-size:1.05rem; margin:22px 0 8px; color:var(--ink);}
+  p{max-width:78ch;}
+
+  .callout{
+    border-radius:2px;
+    padding:14px 18px;
+    margin:16px 0;
+    font-size:0.92rem;
+    max-width:78ch;
+    border:1px solid transparent;
+  }
+  .callout .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    display:block;
+    margin-bottom:6px;
+    font-weight:600;
+  }
+  .callout.flag{ background:#F6E3DE; border-color:#E2AFA3; }
+  .callout.flag .label{color:var(--stamp-dark);}
+  .callout.tip{ background:#E4EEE7; border-color:#B9D2C2; }
+  .callout.tip .label{color:var(--peso);}
+  .callout.tag{ background:#FBEECB; border-color:#E7C876; }
+  .callout.tag .label{color:#8A6614;}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0 24px;
+    font-size:0.88rem;
+    background:var(--paper-light);
+    box-shadow:var(--card-shadow);
+  }
+  th,td{
+    padding:9px 12px;
+    border-bottom:1px solid var(--rule);
+    text-align:left;
+    vertical-align:top;
+  }
+  th{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-soft);
+    background:var(--paper-dark);
+  }
+  tr:last-child td{border-bottom:none;}
+  td.keep{color:var(--peso); font-weight:600;}
+  td.drop{color:var(--stamp); font-weight:600;}
+  td.new{color:var(--ballpen); font-weight:600;}
+  td.done-col{ text-align:center; width:40px; }
+  tr.done td:not(.done-col){ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--peso); }
+
+  pre{
+    background:#241F17;
+    color:#E9E0C6;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+    padding:16px 18px;
+    border-radius:2px;
+    overflow-x:auto;
+    line-height:1.55;
+    margin:14px 0 22px;
+  }
+  code{font-family:'IBM Plex Mono', monospace; font-size:0.86em;}
+  :not(pre) > code{
+    background:var(--paper-dark);
+    padding:1px 5px;
+    border-radius:2px;
+  }
+
+  ul, ol.plain{padding-left:22px; max-width:78ch;}
+  li{margin-bottom:5px;}
+  ol.plain li{padding-left:2px;}
+  ol.plain label{display:flex; gap:8px; align-items:flex-start; cursor:pointer;}
+  ol.plain li.done label{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--peso); }
+
+  .checklist{list-style:none; padding-left:0; max-width:78ch;}
+  .checklist li{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:8px 0; border-bottom:1px dashed var(--rule);
+  }
+  .checklist li label{display:flex; gap:10px; align-items:flex-start; cursor:pointer; width:100%;}
+  .checklist li.done label{ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--peso); }
+
+  .trackable{
+    appearance:none; -webkit-appearance:none;
+    width:18px; height:18px; flex:0 0 18px;
+    border:2px solid var(--ink-soft);
+    border-radius:2px;
+    background:var(--paper-light);
+    cursor:pointer;
+    position:relative;
+    margin-top:1px;
+  }
+  .trackable:checked{ background:var(--peso); border-color:var(--peso); }
+  .trackable:checked::after{
+    content:"✓";
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:12px; font-weight:700;
+  }
+  .trackable:focus-visible{ outline:2px solid var(--ballpen); outline-offset:2px; }
+
+  .price-tags{display:flex; gap:16px; flex-wrap:wrap; margin:16px 0 24px;}
+  .price-tag{
+    background:var(--paper-light);
+    border:1px solid var(--rule);
+    box-shadow:var(--card-shadow);
+    padding:16px 18px;
+    width:calc(50% - 8px);
+    min-width:260px;
+    position:relative;
+    border-radius:2px;
+  }
+  .price-tag::before{
+    content:"";
+    position:absolute; top:12px; right:-6px;
+    width:12px; height:12px;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:50%;
+  }
+  .price-tag .ptag-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    color:var(--tag);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .price-tag h4{margin:4px 0 6px; font-size:1.02rem;}
+  .price-tag p{font-size:0.87rem; color:var(--ink-soft); margin:0 0 10px;}
+  .price-tag .impl-toggle{
+    display:flex; gap:8px; align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
+    color:var(--ink-soft);
+    border-top:1px dashed var(--rule);
+    padding-top:10px;
+    cursor:pointer;
+  }
+  .price-tag.done .impl-toggle{ color:var(--peso); font-weight:600; }
+
+  footer{
+    max-width:78ch;
+    color:var(--ink-soft);
+    font-size:0.82rem;
+    margin-top:40px;
+    border-top:1px solid var(--rule);
+    padding-top:16px;
+  }
+
+  @media (max-width: 880px){
+    .layout{display:block;}
+    nav.toc{ position:static; width:auto; height:auto; padding:16px; }
+    nav.toc .toc-inner{ max-height:0; overflow:hidden; transition:max-height .25s ease; }
+    #toc-toggle:checked ~ .toc-inner{ max-height:600px; overflow-y:auto; }
+    label.toc-btn{
+      display:block; cursor:pointer; font-family:'IBM Plex Mono', monospace;
+      background:var(--stamp); color:#fff; text-align:center;
+      padding:10px; border-radius:2px; font-size:0.8rem; letter-spacing:0.05em;
+    }
+    main{padding:18px 16px 60px;}
+    .price-tag{width:100%;}
+    .receipt-tape{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc">
+    <input type="checkbox" id="toc-toggle">
+    <label class="toc-btn" for="toc-toggle">☰ Lista ng Laman (Contents)</label>
+    <div class="toc-inner">
+      <div class="toc-head">Sa Loob ng Tindahan</div>
+      <ol>
+        <li><a href="#assessment">Findings on the source repo</a></li>
+        <li><a href="#choice">App choice &amp; platform</a></li>
+        <li><a href="#architecture">Simplified architecture</a></li>
+        <li><a href="#data-model">Data model (Firestore)</a></li>
+        <li><a href="#data-access">Data access &amp; ORM decision</a></li>
+        <li><a href="#requirements">Requirement → feature map</a></li>
+        <li><a href="#value-add">Value-added features</a></li>
+        <li><a href="#reuse">Reuse / discard from suarez-food-hub</a></li>
+        <li><a href="#firebase-setup">Firebase setup checklist</a></li>
+        <li><a href="#deliverables">Deliverables &amp; docs to write</a></li>
+        <li><a href="#timeline">Build order</a></li>
+        <li><a href="#audit">Live audit — known issues</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main>
+    <div class="resibo">
+      <span class="kicker">Documentation &amp; Progress Tracker · Live</span>
+      <h1>Borcello Store</h1>
+      <div class="sub">Sari-Sari Store System — a lean, single-app rebuild on Firebase. Full build roadmap and the "Violet Counter" design system live in <code>roadmap.md</code> for the scaffolding agent; this page tracks the plan and its completion status.</div>
+      <div class="receipt-tape">
+        <div class="row"><span>APP CHOSEN</span><span>A — Sari-Sari Store System</span></div>
+        <div class="row"><span>PLATFORM</span><span>Web (Next.js) + PWA</span></div>
+        <div class="row"><span>BACKEND</span><span>Firebase — Firestore + Auth + Storage</span></div>
+        <div class="row"><span>ORM</span><span>None — typed data-access layer</span></div>
+        <div class="row"><span>DESIGN SYSTEM</span><span>Violet Counter — off-white / purple</span></div>
+        <div class="row"><span>SOURCE REPO STATUS</span><span>Reference only, not a base</span></div>
+      </div>
+      <div class="snip">✂ — - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ✂</div>
+    </div>
+
+    <div class="tracker-bar">
+      <div class="tracker-head">
+        <span>Overall Progress</span>
+        <button id="reset-progress" type="button">Reset</button>
+      </div>
+      <div class="tracker-track"><div class="tracker-fill" id="progress-fill"></div></div>
+      <div class="tracker-label" id="progress-label">Loading progress…</div>
+    </div>
+
+    <div class="torn"></div>
+
+    <section id="assessment">
+      <h2><span class="num">01</span>Findings on the source repo</h2>
+      <p class="lede">Before planning anything, here's what <code>suarez-food-hub</code> actually is, so the rest of this plan is grounded in reality rather than in the repo's name.</p>
+
+      <p>It's a Turborepo/pnpm monorepo with four separate Next.js apps (customer ordering, admin dashboard, kitchen staff, rider delivery PWA), a 15-model Prisma schema against Postgres/Supabase, GCash/Maya payment flows, rider commission and cashout logic, live GPS broadcasting via Supabase Realtime, and PSGC address seed data for the Philippines. There is no barcode scanning anywhere in the codebase.</p>
+
+      <div class="callout flag">
+        <span class="label">⚑ Flag — scope mismatch</span>
+        The assignment's Sari-Sari Store path asks for one shopkeeper-facing tool: register products, add stock, scan-and-sell, view sales history, flag low stock. This repo is a multi-role delivery marketplace. Stripping it down to size means deleting the large majority of it — which is more work, and more risk of leftover complexity, than building the small app fresh.
+      </div>
+
+      <div class="callout tip">
+        <span class="label">✓ What's still worth keeping</span>
+        The <code>admin/inventory</code> page's low-stock highlight pattern (red when <code>quantity ≤ buffer_quantity</code>, default buffer of 5) is almost exactly what the assignment asks for, and the Tailwind + shadcn/ui setup in <code>packages/ui</code> is reusable styling scaffolding. Logos and brand assets carry over fine too.
+      </div>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="choice">
+      <h2><span class="num">02</span>App choice &amp; platform justification</h2>
+      <p class="lede">Locked in: Web (Next.js), installable as a PWA. This is the write-up for assignment task #2.</p>
+
+      <h3>App: A — The Sari-Sari Store System</h3>
+      <p>Chosen over the Explorer Discovery App because it maps directly onto a real business context and produces a genuinely useful administrative tool rather than a novelty GPS game.</p>
+
+      <h3>Platform: Web (Next.js) as an installable PWA</h3>
+      <ul>
+        <li><strong>Hardware — barcode scanning:</strong> a counter-based scan via <code>getUserMedia</code> + a JS barcode decoder covers a fixed-counter use case without a native camera pipeline. Documented trade-off: ML Kit's native Android integration is more robust for continuous fast scanning — noted here rather than glossed over.</li>
+        <li><strong>Hardware — product photos:</strong> <code>&lt;input type="file" accept="image/*" capture="environment"&gt;</code> opens the device camera directly, the web equivalent of Android's Intent-based camera capture.</li>
+        <li><strong>Accessibility &amp; reach:</strong> works from any device with a browser, no install required to try it — and layered with a PWA manifest + service worker, it installs to the home screen and opens full-screen like a native app, giving the native feel without app-store distribution friction.</li>
+        <li><strong>User needs:</strong> a single owner/cashier on one counter device benefits from instant updates and a build that's trivially demoable from any browser for the video submission.</li>
+        <li><strong>Fallback path:</strong> if the rubric turns out to require native Android APIs by name, the Firestore data model and business logic stay identical — only the presentation layer would move to Kotlin + Jetpack.</li>
+      </ul>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="architecture">
+      <h2><span class="num">03</span>Simplified architecture</h2>
+      <p class="lede">One app. No monorepo, no Turborepo, no multiple deployable targets.</p>
+
+      <pre>sari-sari-store/
+├── app/
+│   ├── (auth)/login/            # Owner + cashier sign-in
+│   ├── (dashboard)/
+│   │   ├── products/            # Registration, edit, image upload
+│   │   ├── pos/                 # Virtual cart, checkout
+│   │   ├── sales/                # Sales history
+│   │   └── low-stock/           # Alerts view (or a dashboard widget)
+│   └── api/
+│       └── sales/               # Transaction execution (server-side, atomic)
+├── lib/
+│   ├── firebase/                # client + admin SDK init
+│   ├── data-access/              # typed functions per collection (§5)
+│   └── schemas/                  # Zod validation schemas
+├── components/                  # shared UI, nav shell (bottom nav + profile menu)
+├── public/
+│   ├── manifest.json             # PWA manifest
+│   └── sw.js                     # service worker
+└── firestore.rules</pre>
+
+      <p>One role model, not four: <strong>Owner</strong> (full access) and <strong>Cashier</strong> (POS + stock add, no settings). Navigation shell: bottom nav (Dashboard / Products / Sell / History) on mobile, a fixed left sidebar with the same 4 destinations on desktop, plus a top-right profile dropdown at every screen size (Profile → Settings → More → Logout) — full spec in <code>roadmap.md</code> §5, under the "Violet Counter" design system.</p>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="data-model">
+      <h2><span class="num">04</span>Data model (Firestore)</h2>
+      <p class="lede">Five collections instead of fifteen models. Firestore is document-based — no joins, so category/product data is denormalized where it's read together.</p>
+
+      <table>
+        <tr><th>Collection</th><th>Key fields</th><th>Notes</th></tr>
+        <tr>
+          <td><code>products</code></td>
+          <td><code>name, barcode, categoryName, unitPrice, quantity, bufferQuantity, imageUrl, createdAt, updatedAt</code></td>
+          <td>Low-stock = <code>quantity ≤ bufferQuantity</code>, mirrors the source repo's pattern.</td>
+        </tr>
+        <tr>
+          <td><code>categories</code></td>
+          <td><code>name</code></td>
+          <td>Small, flat list — no nested subcategories needed.</td>
+        </tr>
+        <tr>
+          <td><code>sales</code></td>
+          <td><code>items[] {productId, name, qty, unitPrice, lineTotal}, total, cashierId, cashierName, createdAt</code></td>
+          <td>One document per completed transaction; items embedded, not a subcollection.</td>
+        </tr>
+        <tr>
+          <td><code>stockLogs</code></td>
+          <td><code>productId, type ('restock'|'sale'|'adjustment'), delta, resultingQuantity, note, actorId, createdAt</code></td>
+          <td>Audit trail — powers the Smart Restock Assistant in §7.</td>
+        </tr>
+        <tr>
+          <td><code>users</code></td>
+          <td><code>displayName, role ('owner'|'cashier')</code></td>
+          <td>Mirrors Firebase Auth UID; role also set as a custom claim for security rules.</td>
+        </tr>
+      </table>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="data-access">
+      <h2><span class="num">05</span>Data access &amp; the ORM decision</h2>
+      <p class="lede">No real ORM exists for Firestore — it's schemaless NoSQL, so there's nothing to generate a client from.</p>
+      <ul>
+        <li><strong>Fireorm</strong> — decorator-based repository pattern, Prisma-ish syntax. Thinly maintained, and fights against Firestore's real-time <code>onSnapshot</code> listeners.</li>
+        <li><strong>firestore-simple</strong> — lighter wrapper, similar trade-offs.</li>
+      </ul>
+      <div class="callout tip">
+        <span class="label">✓ Recommendation</span>
+        Skip both. Use the Firebase JS SDK directly, wrapped in a handful of typed functions per collection, validated with Zod. Idiomatic, keeps real-time listeners simple, least moving parts.
+      </div>
+      <pre>// lib/data-access/products.ts
+export async function addStock(productId: string, delta: number, actorId: string) {
+  const ref = doc(db, "products", productId);
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const current = snap.data()!.quantity as number;
+    tx.update(ref, { quantity: current + delta, updatedAt: serverTimestamp() });
+    tx.set(doc(collection(db, "stockLogs")), {
+      productId, type: "restock", delta, resultingQuantity: current + delta,
+      actorId, createdAt: serverTimestamp(),
+    });
+  });
+}</pre>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="requirements">
+      <h2><span class="num">06</span>Requirement → feature map</h2>
+      <p class="lede">Every line item from the assignment brief. Check items off as they're built.</p>
+      <table>
+        <tr><th class="done-col">✓</th><th>Brief requirement</th><th>Where it's covered</th></tr>
+        <tr data-row-id="req-1"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-1"></td><td>Product registration (name, category, price)</td><td><code>products</code> collection + Product form, §4</td></tr>
+        <tr data-row-id="req-2"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-2"></td><td>Add Stock workflow (increment counts)</td><td><code>addStock()</code> transaction, §5</td></tr>
+        <tr data-row-id="req-3"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-3"></td><td>Barcode integration, auto-fetch stock level</td><td>Browser barcode decoder → query <code>products</code> by <code>barcode</code>, §2</td></tr>
+        <tr data-row-id="req-4"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-4"></td><td>Image attachment via camera/gallery</td><td><code>capture="environment"</code> input → Firebase Storage, §2</td></tr>
+        <tr data-row-id="req-5"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-5"></td><td>Virtual cart (multiple items, pending sale)</td><td>Client-side cart state → <code>/pos</code> route, §3</td></tr>
+        <tr data-row-id="req-6"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-6"></td><td>Stock validation before checkout</td><td>Pre-checkout read of <code>quantity</code>, blocks if <code>requestedQty &gt; quantity</code></td></tr>
+        <tr data-row-id="req-7"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-7"></td><td>Transaction execution (deduct + log sale)</td><td>Server-side atomic write to <code>products</code> + <code>sales</code>, §4–§5</td></tr>
+        <tr data-row-id="req-8"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-8"></td><td>Real-time UI update</td><td>Firestore <code>onSnapshot</code> listeners on the POS and product list</td></tr>
+        <tr data-row-id="req-9"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-9"></td><td>Sales History (list, total, timestamp)</td><td><code>/sales</code> route reading <code>sales</code> collection</td></tr>
+        <tr data-row-id="req-10"><td class="done-col"><input type="checkbox" class="trackable" data-id="req-10"></td><td>Low Stock Alerts (&lt; threshold)</td><td><code>bufferQuantity</code> comparison, surfaced on dashboard</td></tr>
+      </table>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="value-add">
+      <h2><span class="num">07</span>Value-added features — locked in</h2>
+      <p class="lede">Full implementation detail lives in <code>roadmap.md</code> §7. Mark done once built and demoed.</p>
+
+      <div class="price-tags">
+        <div class="price-tag" id="card-vf-1">
+          <span class="ptag-label">Intelligence + admin efficiency</span>
+          <h4>Smart Restock Assistant</h4>
+          <p>Rolling average daily sales velocity per product from <code>stockLogs</code>, projecting days-until-stockout as a ranked restock list instead of a flat threshold.</p>
+          <label class="impl-toggle"><input type="checkbox" class="trackable" data-id="vf-1"> Implemented &amp; demoed</label>
+        </div>
+        <div class="price-tag" id="card-vf-2">
+          <span class="ptag-label">UX + real-world resilience</span>
+          <h4>Offline-Ready POS</h4>
+          <p>Revised design: checkout stages to a <code>pendingSales</code> outbox (works offline), a processor commits each one through the real stock-validation transaction once online. Offline-capable <em>and</em> still hard-guarantees no overselling — see roadmap §7.2 for why the original transaction-only approach couldn't do both.</p>
+          <label class="impl-toggle"><input type="checkbox" class="trackable" data-id="vf-2"> Implemented &amp; demoed</label>
+        </div>
+      </div>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="reuse">
+      <h2><span class="num">08</span>Reuse / discard from suarez-food-hub</h2>
+      <table>
+        <tr><th>From the repo</th><th>Verdict</th><th>Why</th></tr>
+        <tr><td>4-app Turborepo structure</td><td class="drop">Discard</td><td>One shopkeeper needs one app.</td></tr>
+        <tr><td>Prisma + Postgres/Supabase schema</td><td class="drop">Discard</td><td>Assignment mandates Firestore; schema is 3x oversized for this scope.</td></tr>
+        <tr><td>Rider app, GCash/Maya payments, cashouts</td><td class="drop">Discard</td><td>No delivery or payment-gateway requirement in the brief.</td></tr>
+        <tr><td>9-state order machine</td><td class="drop">Discard</td><td>A POS sale is a single atomic transaction, not a fulfillment pipeline.</td></tr>
+        <tr><td>Low-stock highlight UX pattern</td><td class="keep">Keep</td><td>Matches the brief almost exactly.</td></tr>
+        <tr><td>Tailwind config + shadcn/ui components</td><td class="keep">Keep</td><td>Styling scaffolding, no business logic attached.</td></tr>
+        <tr><td>Logo assets</td><td class="keep">Keep</td><td>Superseded by new Borcello Store branding (§ image prompt).</td></tr>
+        <tr><td>Firestore data model, roles, security rules</td><td class="new">Build new</td><td>Written fresh for this app's actual scope.</td></tr>
+        <tr><td>Barcode scanning, camera capture, sales history, low-stock logic</td><td class="new">Build new</td><td>Doesn't exist in the source repo at all.</td></tr>
+      </table>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="firebase-setup">
+      <h2><span class="num">09</span>Firebase setup checklist</h2>
+      <ul class="checklist">
+        <li><label><input type="checkbox" class="trackable" data-id="fb-1"> Create Firebase project, enable Firestore (Native mode) and Authentication (Email/Password).</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fb-2"> Enable Firebase Storage for product images.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fb-3"> Set custom claims (<code>role: 'owner' | 'cashier'</code>) on user creation.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fb-4"> Write <code>firestore.rules</code>: authenticated staff only, no public storefront read.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fb-5"> Add composite index on <code>products.barcode</code> if scan lookups need it.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fb-6"> Enable offline persistence for the Offline-Ready POS feature.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fb-7"> Seed demo products + categories for the video demo.</label></li>
+      </ul>
+      <pre>// firestore.rules (sketch)
+match /products/{id} {
+  allow read: if request.auth != null;
+  allow write: if request.auth != null;
+}
+match /sales/{id} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null;
+  allow update, delete: if false;
+}
+match /users/{id} {
+  allow read: if request.auth != null;
+  allow write: if request.auth.token.role == 'owner';
+}</pre>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="deliverables">
+      <h2><span class="num">10</span>Deliverables &amp; docs to actually write</h2>
+      <ul class="checklist">
+        <li><label><input type="checkbox" class="trackable" data-id="deliv-1"> <strong>Repository:</strong> clean single-app repo, README with setup + Firebase config + demo-seed steps.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="deliv-2"> <strong>Video demonstration:</strong> register product → scan-to-sell → low-stock alert → sales history → one value-add feature live.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="deliv-3"> <strong>Description &amp; justification document:</strong> app + platform choice (§2), Firebase architecture (§3–§4), the two value-added features (§7).</label></li>
+      </ul>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="timeline">
+      <h2><span class="num">11</span>Build order</h2>
+      <ol class="plain checklist">
+        <li><label><input type="checkbox" class="trackable" data-id="step-1"> Firebase project + auth + security rules + data-access layer (§5, §9)</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="step-2"> Product registration + image upload + Add Stock workflow</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="step-3"> Barcode scan-to-lookup, then the POS cart + stock-validated checkout</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="step-4"> Sales history + low-stock dashboard</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="step-5"> Smart Restock Assistant, then Offline-Ready POS (§7)</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="step-6"> Record the demo video, write the justification document</label></li>
+      </ol>
+    </section>
+
+    <div class="torn"></div>
+
+    <section id="audit">
+      <h2><span class="num">12</span>Live audit — issues found in the actual repo</h2>
+      <p class="lede">Found by reading <code>borcelo-dev/borcelo-store</code> directly, not by assumption. Fixed in <code>roadmap.md</code>; check off once DeepSeek's fix is verified in the running app.</p>
+      <div class="callout flag">
+        <span class="label">⚑ Root cause of the Settings bug</span>
+        <code>firestore.rules</code> in the repo was still the default <code>allow read, write: if false</code> placeholder — never actually deployed. Blocked the <code>users/{'{'}uid{'}'}</code> read that determines role, so the real owner saw "owner only." Also likely silently blocked writes (adding products).
+      </div>
+      <ul class="checklist">
+        <li><label><input type="checkbox" class="trackable" data-id="fix-1"> Real <code>firestore.rules</code> (get()-based role check, no custom claims) deployed via <code>firebase deploy --only firestore:rules</code> — verified in the Firebase console, not just committed to the repo.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fix-2"> Desktop sidebar added (4 nav destinations), bottom nav hidden at that breakpoint, top bar kept at all sizes.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fix-3"> Logo lockup image wired into the top bar, replacing placeholder text; lockup PNGs copied into <code>public/</code>.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fix-4"> Product image upload migrated from <code>firebase/storage</code> to Cloudinary; <code>storage</code> export removed from <code>lib/firebase/config.ts</code>.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fix-5"> Checkout rebuilt on the <code>pendingSales</code> outbox pattern (roadmap §7.2) — offline-safe <em>and</em> still hard-guarantees no overselling, replacing the old direct-transaction approach that couldn't run offline at all.</label></li>
+        <li><label><input type="checkbox" class="trackable" data-id="fix-6"> Sync indicator expanded beyond binary online/offline — shows pending count, syncing state, and surfaces any sale conflicts for manual review.</label></li>
+      </ul>
+    </section>
+
+    <footer>
+      Living project tracker — progress is saved automatically as you check items off. Full build spec and the Violet Counter design system are in <code>roadmap.md</code> for the scaffolding agent.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'borcello-tracker-state';
+  var state = {};
+
+  function trackables(){ return Array.prototype.slice.call(document.querySelectorAll('.trackable')); }
+
+  function applyDoneClass(box){
+    var row = box.closest('tr');
+    var li = box.closest('li');
+    var card = box.closest('.price-tag');
+    if(row) row.classList.toggle('done', box.checked);
+    if(li) li.classList.toggle('done', box.checked);
+    if(card) card.classList.toggle('done', box.checked);
+  }
+
+  function updateProgress(){
+    var boxes = trackables();
+    var total = boxes.length;
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    var pct = total ? Math.round((done/total)*100) : 0;
+    var bar = document.getElementById('progress-fill');
+    var label = document.getElementById('progress-label');
+    if(bar) bar.style.width = pct + '%';
+    if(label) label.textContent = done + ' / ' + total + ' items done · ' + pct + '%';
+  }
+
+  function restore(){
+    trackables().forEach(function(b){
+      var id = b.dataset.id;
+      if(state[id]){ b.checked = true; applyDoneClass(b); }
+    });
+    updateProgress();
+  }
+
+  async function loadState(){
+    try{
+      var result = await window.storage.get(STORAGE_KEY, false);
+      state = (result && result.value) ? JSON.parse(result.value) : {};
+    }catch(e){
+      state = {};
+    }
+    restore();
+  }
+
+  async function saveState(){
+    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }
+    catch(e){ /* keeps working in-memory for this session even if save fails */ }
+  }
+
+  document.addEventListener('change', function(e){
+    var b = e.target;
+    if(!b.classList || !b.classList.contains('trackable')) return;
+    state[b.dataset.id] = b.checked;
+    applyDoneClass(b);
+    updateProgress();
+    saveState();
+  });
+
+  var resetBtn = document.getElementById('reset-progress');
+  if(resetBtn){
+    resetBtn.addEventListener('click', async function(){
+      state = {};
+      trackables().forEach(function(b){ b.checked = false; applyDoneClass(b); });
+      updateProgress();
+      try{ await window.storage.delete(STORAGE_KEY, false); }catch(e){}
+    });
+  }
+
+  loadState();
+})();
+</script>
+</body>
+</html>
