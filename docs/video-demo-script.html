@@ -401,21 +401,21 @@
     <div class="timeline-title">Segment Timeline</div>
     <div class="timeline-track">
       <div class="seg seg-1" style="width:10%"></div>
-      <div class="seg seg-2" style="width:15%"></div>
-      <div class="seg seg-3" style="width:15%"></div>
+      <div class="seg seg-2" style="width:13.3%"></div>
+      <div class="seg seg-3" style="width:13.3%"></div>
       <div class="seg seg-4" style="width:20%"></div>
-      <div class="seg seg-5" style="width:6.7%"></div>
-      <div class="seg seg-6" style="width:26.6%"></div>
-      <div class="seg seg-7" style="width:6.7%"></div>
+      <div class="seg seg-5" style="width:5%"></div>
+      <div class="seg seg-6" style="width:21.7%"></div>
+      <div class="seg seg-7" style="width:16.7%"></div>
     </div>
     <div class="timeline-labels">
       <div class="seg-label" style="width:10%"><strong>0:00</strong>Sign In</div>
-      <div class="seg-label" style="width:15%"><strong>0:30</strong>Dashboard</div>
-      <div class="seg-label" style="width:15%"><strong>1:15</strong>Product</div>
-      <div class="seg-label" style="width:20%"><strong>2:00</strong>POS</div>
-      <div class="seg-label" style="width:6.7%"><strong>3:00</strong>Sales</div>
-      <div class="seg-label" style="width:26.6%"><strong>3:20</strong>Offline POS</div>
-      <div class="seg-label" style="width:6.7%"><strong>4:30</strong>Wrap</div>
+      <div class="seg-label" style="width:13.3%"><strong>0:30</strong>Dashboard</div>
+      <div class="seg-label" style="width:13.3%"><strong>1:10</strong>Product</div>
+      <div class="seg-label" style="width:20%"><strong>1:50</strong>POS</div>
+      <div class="seg-label" style="width:5%"><strong>2:50</strong>Sales</div>
+      <div class="seg-label" style="width:21.7%"><strong>3:05</strong>Offline POS</div>
+      <div class="seg-label" style="width:16.7%"><strong>4:10</strong>Wrap + PWA</div>
     </div>
   </div>
 
@@ -458,7 +458,7 @@
         <h2>Dashboard &mdash; Low Stock &amp; Restock Assistant</h2>
         <p class="desc">Show the real-time overview, low-stock alerts, and the Smart Restock Assistant ranked by sales velocity.</p>
       </div>
-      <div class="segment-time">0:30 &ndash; 1:15<span class="dur">45 sec</span></div>
+      <div class="segment-time">0:30 &ndash; 1:10<span class="dur">40 sec</span></div>
     </div>
     <div class="segment-body">
       <div class="script-row">
@@ -492,7 +492,7 @@
         <h2>Product Registration &mdash; with Live Photo Upload</h2>
         <p class="desc">Register a new product, fill all fields, and upload a photo via Cloudinary.</p>
       </div>
-      <div class="segment-time">1:15 &ndash; 2:00<span class="dur">45 sec</span></div>
+      <div class="segment-time">1:10 &ndash; 1:50<span class="dur">40 sec</span></div>
     </div>
     <div class="segment-body">
       <div class="script-row">
@@ -537,7 +537,7 @@
         <h2>Barcode Lookup + POS Checkout</h2>
         <p class="desc">Search by barcode, build a cart, validate stock, and complete checkout via the outbox pattern.</p>
       </div>
-      <div class="segment-time">2:00 &ndash; 3:00<span class="dur">60 sec</span></div>
+      <div class="segment-time">1:50 &ndash; 2:50<span class="dur">60 sec</span></div>
     </div>
     <div class="segment-body">
       <div class="script-row">
@@ -579,7 +579,7 @@
         <h2>Sales History</h2>
         <p class="desc">Quickly show the sales list and drill into a receipt detail.</p>
       </div>
-      <div class="segment-time">3:00 &ndash; 3:20<span class="dur">20 sec</span></div>
+      <div class="segment-time">2:50 &ndash; 3:05<span class="dur">15 sec</span></div>
     </div>
     <div class="segment-body">
       <div class="script-row">
@@ -610,7 +610,7 @@
         <h2>Offline-Ready POS &mdash; The Outbox Pattern</h2>
         <p class="desc">The money shot. Go offline, stage a sale, come back online, watch it sync, verify in history.</p>
       </div>
-      <div class="segment-time">3:20 &ndash; 4:30<span class="dur">70 sec</span></div>
+      <div class="segment-time">3:05 &ndash; 4:10<span class="dur">65 sec</span></div>
     </div>
     <div class="segment-body">
       <div class="script-row">
@@ -655,10 +655,10 @@
     <div class="segment-header">
       <div class="segment-num seg-7">7</div>
       <div class="segment-meta">
-        <h2>Architecture Tour + Closing</h2>
-        <p class="desc">Quick code editor tour showing the data-access layer and sync context, then sign off.</p>
+        <h2>Architecture, PWA &amp; Mobile View, Closing</h2>
+        <p class="desc">Code editor tour, responsive design demo showing the PWA install banner, then sign off.</p>
       </div>
-      <div class="segment-time">4:30 &ndash; 5:00<span class="dur">30 sec</span></div>
+      <div class="segment-time">4:10 &ndash; 5:00<span class="dur">50 sec</span></div>
     </div>
     <div class="segment-body">
       <div class="script-row">
@@ -668,18 +668,31 @@
           <p class="action">Open <code>src/lib/data-access/sales.ts</code> &mdash; show <code>commitSale()</code> function</p>
           <p class="action">Briefly highlight the <code>runTransaction</code> block &mdash; stock check + deduction + sale write + pendingSales status update</p>
           <p class="action">Open <code>src/contexts/sync-context.tsx</code> &mdash; show the sync processor</p>
-          <p class="action">Switch back to browser, show the app running</p>
-          <p class="action">End on the dashboard</p>
+          <p class="action">Switch back to browser</p>
+          <p class="action">Open DevTools &rarr; Toggle device toolbar (<code>Ctrl+Shift+M</code>)</p>
+          <p class="action">Select a mobile viewport (e.g. iPhone 14 Pro)</p>
+          <p class="action">The layout shifts: sidebar disappears, <strong>bottom nav</strong> appears with 4 tabs (Dashboard, Products, Sell, History)</p>
+          <p class="action">Show the <strong>"Install Borcello Store"</strong> banner at the bottom with the Download button</p>
+          <p class="action">Point to the <code>manifest.json</code> in the editor &mdash; <code>"display": "standalone"</code>, theme color, icons</p>
+          <p class="action">Exit device toolbar, end on dashboard at desktop width</p>
         </div>
         <div class="col">
           <span class="col-label">Narration</span>
           <p class="narration">Under the hood, the checkout uses a Firestore transaction that re-checks stock inside the write &mdash; so even under retry or concurrent access, it's idempotent and can't oversell.</p>
           <p class="narration">The sync context runs the processor on load, every 30 seconds, and whenever the device comes back online. Conflicts are flagged for manual review.</p>
-          <p class="narration">That's Borcello Store &mdash; a lean, offline-capable Sari-Sari Store system built on Next.js and Firebase. Thank you.</p>
+          <p class="narration">The app is fully responsive. On mobile, the sidebar collapses into a bottom navigation bar &mdash; same four destinations, touch-optimized.</p>
+          <p class="narration">And it's a Progressive Web App. The install banner prompts users to add it to their home screen. Once installed, it opens in standalone mode &mdash; no browser chrome, just the app. The service worker caches the app shell for instant loads.</p>
+          <p class="narration">That's Borcello Store &mdash; a lean, offline-capable, installable Sari-Sari Store system built on Next.js and Firebase. Thank you.</p>
         </div>
       </div>
+      <div class="sidenote tip">
+        <strong>Recording tip:</strong> Have VS Code and the browser side-by-side. For the mobile demo, use Chrome's device toolbar (<code>Ctrl+Shift+M</code>) &mdash; it simulates a phone viewport and triggers the PWA install prompt. The install banner only fires if the app meets PWA criteria (manifest + service worker + HTTPS or localhost).
+      </div>
       <div class="sidenote">
-        <strong>Code to have ready:</strong> Have these two files open in adjacent tabs before recording starts. <code>commitSale()</code> in <code>sales.ts</code> is the atomic transaction. <code>sync-context.tsx</code> shows the polling + online/offline event listeners.
+        <strong>Code to have ready:</strong> Have these files open in tabs before recording: <code>sales.ts</code>, <code>sync-context.tsx</code>, and <code>public/manifest.json</code>. The manifest shows <code>"display": "standalone"</code> and the icon sizes.
+      </div>
+      <div class="sidenote warn">
+        <strong>Note:</strong> The install banner fires from Chrome's <code>beforeinstallprompt</code> event. If it doesn't appear during recording, mention it verbally and show the manifest.json as proof. The banner may not trigger in incognito or if the app was already installed.
       </div>
     </div>
   </div>
@@ -693,11 +706,12 @@
       <li><span class="box"></span> A small product image file ready on desktop (for the photo upload beat)</li>
       <li><span class="box"></span> Browser maximized, zoom at 100%</li>
       <li><span class="box"></span> DevTools closed (open them live during segment 6)</li>
-      <li><span class="box"></span> VS Code open with <code>sales.ts</code> and <code>sync-context.tsx</code> in adjacent tabs</li>
+      <li><span class="box"></span> VS Code open with <code>sales.ts</code>, <code>sync-context.tsx</code>, and <code>manifest.json</code> in tabs</li>
       <li><span class="box"></span> Narration lines read aloud at least twice</li>
       <li><span class="box"></span> Snipping Tool ready &mdash; "New" &rarr; "Window recording" or "Screen recording"</li>
       <li><span class="box"></span> Notifications silenced (OS-level, no interruptions)</li>
       <li><span class="box"></span> Practice the offline toggle once (DevTools &rarr; Network &rarr; Offline &rarr; Online)</li>
+      <li><span class="box"></span> Practice the device toolbar toggle (<code>Ctrl+Shift+M</code>) for the mobile view demo</li>
     </ul>
   </div>
 
@@ -708,6 +722,7 @@
       <li><span class="box"></span> Trim dead air between segments (keep transitions under 1 sec)</li>
       <li><span class="box"></span> Add segment title cards between sections (optional, but looks polished)</li>
       <li><span class="box"></span> During segment 6, add a text overlay: <strong>"Offline Mode"</strong> when the offline banner appears</li>
+      <li><span class="box"></span> During segment 7, add a text overlay: <strong>"PWA &mdash; Installable"</strong> when the install banner shows</li>
       <li><span class="box"></span> If any segment ran long, cut the optional "out of stock" beat from segment 4</li>
       <li><span class="box"></span> Add background music (low, non-distracting) if the rubric doesn't forbid it</li>
       <li><span class="box"></span> Export at 1080p, upload to YouTube as unlisted (or whatever the submission requires)</li>
