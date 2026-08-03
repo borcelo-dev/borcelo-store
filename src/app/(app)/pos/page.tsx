@@ -294,7 +294,7 @@ export default function PosPage() {
 
       <Button
         className="w-full"
-        disabled={cart.length === 0 || checkingOut}
+        disabled={cart.length === 0 || checkingOut || !user}
         onClick={handleCheckout}
       >
         {checkingOut ? (

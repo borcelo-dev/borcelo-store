@@ -23,28 +23,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const unsub = onAuthChange(async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        // Retry up to 3 times — persistent cache initialization can cause
-        // the first getDoc call to return null on a cold PWA start.
-        let doc = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            doc = await getUserDoc(firebaseUser.uid);
-            if (doc) break;
-          } catch {
-            // ignore, will retry
+      try {
+        if (firebaseUser) {
+          let doc = null;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              doc = await getUserDoc(firebaseUser.uid);
+              if (doc) break;
+            } catch {
+              // ignore, will retry
+            }
+            if (attempt < 2) await new Promise((r) => setTimeout(r, 600));
           }
-          if (attempt < 2) await new Promise((r) => setTimeout(r, 600));
+          if (!cancelled) {
+            setUser(firebaseUser);
+            setUserDoc(doc as (AppUser & { uid: string }) | null);
+          }
+        } else {
+          if (!cancelled) {
+            setUser(null);
+            setUserDoc(null);
+          }
         }
-        setUserDoc(doc as (AppUser & { uid: string }) | null);
-      } else {
-        setUserDoc(null);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     });
-    return unsub;
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
