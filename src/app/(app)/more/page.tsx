@@ -42,8 +42,12 @@ export default function MorePage() {
   const [conflicts, setConflicts] = useState<ConflictSale[]>([]);
 
   const handleDismiss = async (id: string) => {
-    await dismissConflict(id);
-    setConflicts((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await dismissConflict(id);
+      setConflicts((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error("Failed to dismiss conflict:", err);
+    }
   };
 
   useEffect(() => {
