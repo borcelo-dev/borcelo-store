@@ -39,7 +39,7 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn();
-      allow delete: if isOwnerOrAbove();
+      allow delete: if isSignedIn();
     }
     match /users/{id} {
       allow read: if isSignedIn();
