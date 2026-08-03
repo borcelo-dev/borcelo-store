@@ -8,34 +8,44 @@ service cloud.firestore {
     function getRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
+    function isSuperAdmin() {
+      return isSignedIn() && getRole() == 'super_admin';
+    }
+    function isOwnerOrAbove() {
+      return isSignedIn() && (getRole() == 'super_admin' || getRole() == 'owner');
+    }
 
     match /products/{id} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isSuperAdmin();
     }
     match /categories/{id} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isSuperAdmin();
     }
     match /sales/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
-      allow update, delete: if false;
+      allow update, delete: if isSuperAdmin();
     }
     match /stockLogs/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
-      allow update, delete: if false;
+      allow update, delete: if isSuperAdmin();
     }
     match /pendingSales/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn();
-      allow delete: if false;
+      allow delete: if isSuperAdmin();
     }
     match /users/{id} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && getRole() == 'owner';
+      allow create: if false;
+      allow update: if isOwnerOrAbove();
+      allow delete: if isSuperAdmin();
     }
   }
 }

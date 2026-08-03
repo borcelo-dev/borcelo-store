@@ -22,19 +22,19 @@ export function onAuthChange(callback: (user: User | null) => void) {
 export async function getUserDoc(uid: string) {
   const snap = await getDoc(doc(db, "users", uid));
   if (!snap.exists()) return null;
-  return snap.data() as { displayName: string; role: "owner" | "cashier" };
+  return snap.data() as { displayName: string; role: "super_admin" | "owner" | "cashier" };
 }
 
 export async function createUserDoc(
   uid: string,
-  data: { displayName: string; role: "owner" | "cashier"; photoURL?: string }
+  data: { displayName: string; role: "super_admin" | "owner" | "cashier"; photoURL?: string }
 ) {
   return setDoc(doc(db, "users", uid), data);
 }
 
 export async function updateUserDoc(
   uid: string,
-  data: Partial<{ displayName: string; role: "owner" | "cashier"; photoURL: string }>
+  data: Partial<{ displayName: string; role: "super_admin" | "owner" | "cashier"; photoURL: string }>
 ) {
   return setDoc(doc(db, "users", uid), data, { merge: true });
 }
