@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/card";
-import { Layers, ChartBar, AlertTriangle } from "lucide-react";
+import { Layers, ChartBar, AlertTriangle, X } from "lucide-react";
 import {
   collection,
   query,
@@ -12,6 +12,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
+import { dismissConflict } from "@/lib/data-access/pendingSales";
 import type { CartItem } from "@/lib/schemas/sale";
 
 type ConflictSale = {
@@ -39,6 +40,11 @@ const links = [
 
 export default function MorePage() {
   const [conflicts, setConflicts] = useState<ConflictSale[]>([]);
+
+  const handleDismiss = async (id: string) => {
+    await dismissConflict(id);
+    setConflicts((prev) => prev.filter((c) => c.id !== id));
+  };
 
   useEffect(() => {
     async function load() {
@@ -79,9 +85,18 @@ export default function MorePage() {
           <div className="space-y-2">
             {conflicts.map((c) => (
               <div key={c.id} className="border border-border rounded-2px p-3 bg-surface-muted/50">
-                <p className="text-sm text-ink-muted mb-1">
-                  {c.cashierName} · {c.createdAt.toDate().toLocaleString()}
-                </p>
+                <div className="flex items-start justify-between mb-1">
+                  <p className="text-sm text-ink-muted">
+                    {c.cashierName} · {c.createdAt.toDate().toLocaleString()}
+                  </p>
+                  <button
+                    onClick={() => handleDismiss(c.id)}
+                    className="text-ink-muted hover:text-danger transition-colors p-1 -m-1"
+                    aria-label="Dismiss conflict"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
                 <p className="font-semibold text-danger text-sm mb-2">{c.conflictReason}</p>
                 <div className="text-sm text-ink-muted">
                   {c.cart.map((item) => (

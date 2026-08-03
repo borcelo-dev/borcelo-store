@@ -1,6 +1,7 @@
 import {
   doc,
   setDoc,
+  deleteDoc,
   serverTimestamp,
   collection,
   query,
@@ -77,6 +78,10 @@ export async function getConflictCount(): Promise<number> {
   );
   const snap = await getDocs(q);
   return snap.size;
+}
+
+export async function dismissConflict(saleId: string): Promise<void> {
+  await deleteDoc(doc(db, "pendingSales", saleId));
 }
 
 export function onPendingSalesChange(
