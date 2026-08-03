@@ -8,12 +8,14 @@ import Card from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import Badge from "@/components/ui/badge";
 import Modal from "@/components/ui/modal";
-import { Search, Barcode, Trash2, ShoppingCart, CheckCircle } from "lucide-react";
+import { Search, Barcode, Trash2, ShoppingCart, CheckCircle, WifiOff, CloudOff } from "lucide-react";
 import type { Product } from "@/lib/schemas/product";
 import type { CartItem } from "@/lib/schemas/sale";
+import { useSync } from "@/contexts/sync-context";
 
 export default function PosPage() {
   const { user, userDoc } = useAuth();
+  const { online } = useSync();
   const [products, setProducts] = useState<(Product & { id: string })[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState("");
@@ -22,6 +24,7 @@ export default function PosPage() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [successTotal, setSuccessTotal] = useState(0);
+  const [queuedOffline, setQueuedOffline] = useState(false);
   const scannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -141,10 +144,12 @@ export default function PosPage() {
     setCheckingOut(true);
     setCheckoutError("");
     try {
+      const wasOffline = typeof navigator !== "undefined" && !navigator.onLine;
       const saleTotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
       await stageSale(cart, user.uid, cashierName);
       setCart([]);
       setSuccessTotal(saleTotal);
+      setQueuedOffline(wasOffline);
       setCheckoutSuccess(true);
     } catch (err: unknown) {
       setCheckoutError(
@@ -299,6 +304,11 @@ export default function PosPage() {
       >
         {checkingOut ? (
           "Processing..."
+        ) : !online ? (
+          <>
+            <CloudOff size={20} className="mr-1" />
+            Save for later (&#x20B1;{total.toFixed(2)})
+          </>
         ) : (
           <>
             <ShoppingCart size={20} className="mr-1" />
@@ -313,11 +323,17 @@ export default function PosPage() {
       >
         <div className="flex flex-col items-center text-center gap-4 py-2">
           <div className="w-16 h-16 rounded-full bg-[#E6F9F0] flex items-center justify-center">
-            <CheckCircle size={36} className="text-[#22c55e]" />
+            {queuedOffline ? <CloudOff size={36} className="text-[#f59e0b]" /> : <CheckCircle size={36} className="text-[#22c55e]" />}
           </div>
           <div>
-            <h2 className="font-heading font-bold text-2xl text-ink mb-1">Sale Successful!</h2>
-            <p className="text-ink-muted text-sm">The order has been staged and will be processed shortly.</p>
+            <h2 className="font-heading font-bold text-2xl text-ink mb-1">
+              {queuedOffline ? "Sale Queued" : "Sale Successful!"}
+            </h2>
+            <p className="text-ink-muted text-sm">
+              {queuedOffline
+                ? "Saved offline — will sync when you reconnect."
+                : "The order has been staged and will be processed shortly."}
+            </p>
           </div>
           <div className="w-full bg-surface-muted rounded-2px px-6 py-4">
             <p className="text-ink-muted text-sm mb-1">Total Collected</p>

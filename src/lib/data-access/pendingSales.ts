@@ -12,14 +12,16 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { commitSale } from "@/lib/data-access/sales";
+import { offlineQueue } from "@/lib/offline-queue";
 import type { CartItem } from "@/lib/schemas/sale";
 
-export async function stageSale(
+// Internal: write a single pending sale document to Firestore.
+async function writeToFirestore(
+  saleId: string,
   cart: CartItem[],
   cashierId: string,
   cashierName: string,
-): Promise<string> {
-  const saleId = crypto.randomUUID();
+): Promise<void> {
   await setDoc(doc(db, "pendingSales", saleId), {
     cart,
     cashierId,
@@ -28,7 +30,51 @@ export async function stageSale(
     conflictReason: null,
     createdAt: serverTimestamp(),
   });
+}
+
+/**
+ * Stage a sale for processing.
+ * - Online  → writes directly to Firestore `pendingSales`.
+ * - Offline → writes to the local IndexedDB queue; will flush on reconnect.
+ */
+export async function stageSale(
+  cart: CartItem[],
+  cashierId: string,
+  cashierName: string,
+): Promise<string> {
+  const saleId = crypto.randomUUID();
+
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    // Offline path — persist locally.
+    await offlineQueue.enqueue({ id: saleId, cart, cashierId, cashierName, queuedAt: Date.now() });
+  } else {
+    // Online path — write to Firestore immediately.
+    await writeToFirestore(saleId, cart, cashierId, cashierName);
+  }
+
   return saleId;
+}
+
+/**
+ * Flush all locally queued (offline) sales to Firestore.
+ * Called by SyncContext when connectivity is restored or on the 30s poll.
+ * Returns the number of entries successfully flushed.
+ */
+export async function flushLocalQueue(): Promise<number> {
+  const queued = await offlineQueue.getAll();
+  if (queued.length === 0) return 0;
+
+  let flushed = 0;
+  for (const sale of queued) {
+    try {
+      await writeToFirestore(sale.id, sale.cart, sale.cashierId, sale.cashierName);
+      await offlineQueue.remove(sale.id);
+      flushed++;
+    } catch {
+      // Leave in queue — will retry on next flush cycle.
+    }
+  }
+  return flushed;
 }
 
 export async function processPendingSales(
