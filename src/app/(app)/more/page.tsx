@@ -9,7 +9,7 @@ import {
   query,
   where,
   orderBy,
-  getDocs,
+  getDocsFromServer,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { dismissConflict } from "@/lib/data-access/pendingSales";
@@ -57,7 +57,7 @@ export default function MorePage() {
         where("status", "==", "conflict"),
         orderBy("createdAt", "desc"),
       );
-      const snap = await getDocs(q);
+      const snap = await getDocsFromServer(q);
       setConflicts(
         snap.docs.map((d) => {
           const data = d.data();
