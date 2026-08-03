@@ -26,7 +26,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = onAuthChange(async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        const doc = await getUserDoc(firebaseUser.uid);
+        // Retry up to 3 times — persistent cache initialization can cause
+        // the first getDoc call to return null on a cold PWA start.
+        let doc = null;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            doc = await getUserDoc(firebaseUser.uid);
+            if (doc) break;
+          } catch {
+            // ignore, will retry
+          }
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 600));
+        }
         setUserDoc(doc as (AppUser & { uid: string }) | null);
       } else {
         setUserDoc(null);

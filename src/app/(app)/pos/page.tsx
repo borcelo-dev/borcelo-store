@@ -131,16 +131,18 @@ export default function PosPage() {
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
-    if (!user || !userDoc) {
-      setCheckoutError("Session not ready. Please refresh and try again.");
+    if (!user) {
+      setCheckoutError("Not signed in. Please refresh and try again.");
       return;
     }
+    // Fall back to Firebase Auth display name / email if Firestore user doc is unavailable
+    const cashierName = userDoc?.displayName || user.displayName || user.email || "Cashier";
 
     setCheckingOut(true);
     setCheckoutError("");
     try {
       const saleTotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
-      await stageSale(cart, user.uid, userDoc.displayName);
+      await stageSale(cart, user.uid, cashierName);
       setCart([]);
       setSuccessTotal(saleTotal);
       setCheckoutSuccess(true);
