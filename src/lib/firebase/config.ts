@@ -1,5 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
@@ -13,16 +17,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-export const db = getFirestore(app);
+// Use modern persistent cache with multi-tab support.
+// This replaces the deprecated enableIndexedDbPersistence() which caused
+// "failed-precondition" errors when multiple tabs were open.
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
+});
+
 export const auth = getAuth(app);
 export const storage = getStorage(app);
-
-if (typeof window !== "undefined") {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === "failed-precondition") {
-      console.warn("Firestore offline persistence unavailable — multiple tabs open.");
-    } else if (err.code === "unimplemented") {
-      console.warn("Firestore offline persistence not supported in this browser.");
-    }
-  });
-}

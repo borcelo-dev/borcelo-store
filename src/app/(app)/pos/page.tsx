@@ -131,7 +131,10 @@ export default function PosPage() {
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
-    if (!user || !userDoc) return;
+    if (!user || !userDoc) {
+      setCheckoutError("Session not ready. Please refresh and try again.");
+      return;
+    }
 
     setCheckingOut(true);
     setCheckoutError("");
